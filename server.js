@@ -22,6 +22,11 @@ mongoose.connect(process.env.MONGO_URI).then((res)=>{
     console.error("connection failed: ")
 })
 
+app.use((req, res, next)=>{
+    console.log(req.path, req.method)
+    next()
+})
+
 app.use('/users', userRoute)
 app.use('/products', productRoute)
 app.use('/charts', chartRoute)
