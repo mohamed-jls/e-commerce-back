@@ -52,32 +52,38 @@ router.post('/:chartid/product/:productid', async (req, res) => {
     }
 });
 
-router.delete('/:chartid/products/:productid', async (req, res)=> {
-    try{
+router.delete('/:chartid/product/:productid', async (req, res) => {
+    try {
         const chartId = req.params.chartid;
         const productId = req.params.productid;
 
+        // Find the chart
         const chart = await Chart.findById(chartId);
         if (!chart) {
             return res.status(404).json({ message: 'Chart not found' });
         }
 
+        // Find the product (optional, depending on your use case)
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
-        const productToDelete = chart.products.find(pr => pr.product.equals(productId));
-        if (!productToDelete) {
+
+        // Check if the product exists in the chart
+        const productIndex = chart.products.findIndex(pr => pr.product.equals(productId));
+        if (productIndex === -1) {
             return res.status(404).json({ message: 'Product not found in chart' });
-        }        
+        }
 
-        chart.products = chart.products.filter(pr => !pr.product.equals(productToDelete))
+        // Remove the product from the chart
+        chart.products.splice(productIndex, 1); // Remove the product at the found index
 
+        // Save the updated chart
         const updatedChart = await chart.save();
-        res.status(200).json(updatedChart)
-    }catch(err){
-        res.status(500).json({message:err.message})
+        res.status(200).json(updatedChart);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
-})
+});
 
 export default router
